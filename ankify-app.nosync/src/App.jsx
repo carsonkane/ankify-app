@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Download, Sparkles, Trash2, Settings, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function App() {
@@ -9,7 +9,6 @@ export default function App() {
   const [cards, setCards] = useState([]);
   const [error, setError] = useState(null);
   const [focusMode, setFocusMode] = useState('sentence');
-  const [apiKey, setApiKey] = useState(localStorage.getItem('ankify_api_key') || '');
 
   // Load PDF.js dynamically to keep the component self-contained
   const loadPdfJs = async () => {
@@ -79,14 +78,10 @@ export default function App() {
 
   const generateFlashcards = async () => {
     if (!pdfText) return;
-    
-    if (!apiKey.trim()) {
-      setError("Please enter your Gemini API key. You can get one for free from Google AI Studio.");
-      return;
-    }
-
     setIsGenerating(true);
     setError(null);
+
+    const apiKey = ""; // Execution environment injects this
     
     // Tailored instructions for an expert language learner with formatting requirements
     const systemInstruction = `You are an expert linguist, researcher, and advanced Anki flashcard creator. 
@@ -145,7 +140,7 @@ export default function App() {
       const parsedCards = JSON.parse(resultText);
       setCards(parsedCards);
     } catch (err) {
-      setError("Failed to generate flashcards. Please check your API key and try again.");
+      setError("Failed to generate flashcards. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -194,26 +189,6 @@ export default function App() {
           <h1 className="text-4xl font-extrabold tracking-tight">Ankify PDF</h1>
           <p className="text-neutral-500 text-lg">Transform texts into expert-level, beautifully formatted flashcards.</p>
         </header>
-
-        {/* API Key Input */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
-          <label className="text-sm font-bold text-neutral-700 flex items-center gap-2 uppercase tracking-wide mb-2">
-            Gemini API Key
-          </label>
-          <input 
-            type="password" 
-            placeholder="Paste your API key here (AIzaSy...)"
-            value={apiKey}
-            onChange={(e) => {
-              setApiKey(e.target.value);
-              localStorage.setItem('ankify_api_key', e.target.value);
-            }}
-            className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow font-mono text-sm"
-          />
-          <p className="text-xs text-neutral-500 mt-2">
-            Your key is stored safely in your browser's local storage and is never sent anywhere except directly to Google's API. Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Google AI Studio</a>.
-          </p>
-        </div>
 
         {/* Error State */}
         {error && (
